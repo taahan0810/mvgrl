@@ -43,7 +43,7 @@ def process(dataset):
         with open('{0}_node_attributes.txt'.format(prefix), 'r') as f:
             for line in f:
                 node_attrs.append(
-                    np.array([float(attr) for attr in re.split("[,\s]+", line.strip("\s\n")) if attr], dtype=np.float)
+                    np.array([float(attr) for attr in re.split("[,\s]+", line.strip("\s\n")) if attr], dtype=np.float64)
                 )
     else:
         print('No node attributes')
@@ -105,7 +105,7 @@ def process(dataset):
                 f = np.zeros(max_deg + 1)
                 f[graph.degree[u[0]]] = 1.0
                 if 'label' in u[1]:
-                    f = np.concatenate((np.array(u[1]['label'], dtype=np.float), f))
+                    f = np.concatenate((np.array(u[1]['label'], dtype=np.float64), f))
                 graph.nodes[u[0]]['feat'] = f
     return graphs, pprs
 
@@ -124,25 +124,25 @@ def load(dataset):
             labels.append(graph.graph['label'])
             feat.append(np.array(list(nx.get_node_attributes(graph, 'feat').values())))
 
-        adj, diff, feat, labels = np.array(adj), np.array(diff), np.array(feat), np.array(labels)
+        # adj, diff, feat, labels = np.array(adj), np.array(diff), np.array(feat), np.array(labels)
 
-        np.save(f'{datadir}/adj.npy', adj)
-        np.save(f'{datadir}/diff.npy', diff)
-        np.save(f'{datadir}/feat.npy', feat)
-        np.save(f'{datadir}/labels.npy', labels)
+        np.savez(f'{datadir}/adj.npz', *adj)
+        np.savez(f'{datadir}/diff.npz', *diff)
+        np.savez(f'{datadir}/feat.npz', *feat)
+        np.savez(f'{datadir}/labels.npz', *labels)
 
     else:
-        adj = np.load(f'{datadir}/adj.npy', allow_pickle=True)
-        diff = np.load(f'{datadir}/diff.npy', allow_pickle=True)
-        feat = np.load(f'{datadir}/feat.npy', allow_pickle=True)
-        labels = np.load(f'{datadir}/labels.npy', allow_pickle=True)
+        adj = np.load(f'{datadir}/adj.npz', allow_pickle=True)
+        diff = np.load(f'{datadir}/diff.npz', allow_pickle=True)
+        feat = np.load(f'{datadir}/feat.npz', allow_pickle=True)
+        labels = np.load(f'{datadir}/labels.npz', allow_pickle=True)
 
     max_nodes = max([a.shape[0] for a in adj])
     feat_dim = feat[0].shape[-1]
 
     num_nodes = []
 
-    for idx in range(adj.shape[0]):
+    for idx in range(len(adj)):
 
         num_nodes.append(adj[idx].shape[-1])
 
@@ -158,15 +158,15 @@ def load(dataset):
 
         feat[idx] = np.vstack((feat[idx], np.zeros((max_nodes - feat[idx].shape[0], feat_dim))))
 
-    adj = np.array(adj.tolist()).reshape(-1, max_nodes, max_nodes)
-    diff = np.array(diff.tolist()).reshape(-1, max_nodes, max_nodes)
-    feat = np.array(feat.tolist()).reshape(-1, max_nodes, feat_dim)
+    adj = np.array(adj).reshape(-1, max_nodes, max_nodes)
+    diff = np.array(diff).reshape(-1, max_nodes, max_nodes)
+    feat = np.array(feat).reshape(-1, max_nodes, feat_dim)
 
     return adj, diff, feat, labels, num_nodes
 
 
 if __name__ == '__main__':
     # MUTAG, PTC_MR, IMDB-BINARY, IMDB-MULTI, REDDIT-BINARY, REDDIT-MULTI-5K,
-    adj, diff, feat, labels = load('PTC_MR')
+    adj, diff, feat, labels, num_nodes = load('PTC_MR')
     print('done')
 
