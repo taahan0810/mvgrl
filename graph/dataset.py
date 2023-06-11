@@ -131,11 +131,16 @@ def load(dataset):
         np.savez(f'{datadir}/feat.npz', *feat)
         np.savez(f'{datadir}/labels.npz', *labels)
 
-    else:
-        adj = np.load(f'{datadir}/adj.npz', allow_pickle=True)
-        diff = np.load(f'{datadir}/diff.npz', allow_pickle=True)
-        feat = np.load(f'{datadir}/feat.npz', allow_pickle=True)
-        labels = np.load(f'{datadir}/labels.npz', allow_pickle=True)
+    else: 
+        adj_npz = np.load(f'{datadir}/adj.npz', allow_pickle=True)
+        diff_npz = np.load(f'{datadir}/diff.npz', allow_pickle=True)
+        feat_npz = np.load(f'{datadir}/feat.npz', allow_pickle=True)
+        labels_npz = np.load(f'{datadir}/labels.npz', allow_pickle=True)
+
+        adj = [ adj_npz[v] for i,v in enumerate(adj_npz) ]
+        diff = [ diff_npz[v] for i,v in enumerate(diff_npz) ]
+        feat = [ feat_npz[v] for i,v in enumerate(feat_npz) ]
+        labels = [ labels_npz[v] for i,v in enumerate(labels_npz) ]
 
     max_nodes = max([a.shape[0] for a in adj])
     feat_dim = feat[0].shape[-1]

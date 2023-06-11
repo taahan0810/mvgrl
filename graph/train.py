@@ -41,9 +41,9 @@ class GCN(nn.Module):
         n_h = out_ft
         self.layers = []
         self.num_layers = num_layers
-        self.layers.append(GCNLayer(in_ft, n_h).cuda())
+        self.layers.append(GCNLayer(in_ft, n_h))
         for __ in range(num_layers - 1):
-            self.layers.append(GCNLayer(n_h, n_h).cuda())
+            self.layers.append(GCNLayer(n_h, n_h))
 
     def forward(self, feat, adj, mask):
         h_1 = self.layers[0](feat, adj)
@@ -179,9 +179,9 @@ def local_global_loss_(l_enc, g_enc, batch, measure, mask):
     num_nodes = l_enc.shape[0]
     max_nodes = num_nodes // num_graphs
 
-    pos_mask = torch.zeros((num_nodes, num_graphs)).cuda()
-    neg_mask = torch.ones((num_nodes, num_graphs)).cuda()
-    msk = torch.ones((num_nodes, num_graphs)).cuda()
+    pos_mask = torch.zeros((num_nodes, num_graphs))
+    neg_mask = torch.ones((num_nodes, num_graphs))
+    msk = torch.ones((num_nodes, num_graphs))
     for nodeidx, graphidx in enumerate(batch):
         pos_mask[nodeidx][graphidx] = 1.
         neg_mask[nodeidx][graphidx] = 0.
@@ -210,8 +210,8 @@ def global_global_loss_(g1_enc, g2_enc, measure):
     '''
     num_graphs = g1_enc.shape[0]
 
-    pos_mask = torch.zeros((num_graphs, num_graphs)).cuda()
-    neg_mask = torch.ones((num_graphs, num_graphs)).cuda()
+    pos_mask = torch.zeros((num_graphs, num_graphs))
+    neg_mask = torch.ones((num_graphs, num_graphs))
     for graphidx in range(num_graphs):
         pos_mask[graphidx][graphidx] = 1.
         neg_mask[graphidx][graphidx] = 0.
@@ -235,18 +235,18 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
 
     adj, diff, feat, labels, num_nodes = load(dataset)
 
-    feat = torch.FloatTensor(feat).cuda()
-    diff = torch.FloatTensor(diff).cuda()
-    adj = torch.FloatTensor(adj).cuda()
-    labels = torch.LongTensor(labels).cuda()
+    # print(f"{labels}")
+
+    feat = torch.FloatTensor(feat)
+    diff = torch.FloatTensor(diff)
+    adj = torch.FloatTensor(adj)
+    labels = torch.LongTensor([ torch.from_numpy(item).long() for item in labels ])
 
     ft_size = feat[0].shape[1]
     max_nodes = feat[0].shape[0]
 
     model = Model(ft_size, hid_units, num_layer)
     optimiser = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=l2_coef)
-
-    model.cuda()
 
     cnt_wait = 0
     best = 1e9
@@ -269,7 +269,7 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
             lv1 = lv1.view(batch.shape[0] * max_nodes, -1)
             lv2 = lv2.view(batch.shape[0] * max_nodes, -1)
 
-            batch = torch.LongTensor(np.repeat(np.arange(batch.shape[0]), max_nodes)).cuda()
+            batch = torch.LongTensor(np.repeat(np.arange(batch.shape[0]), max_nodes))
 
             loss1 = local_global_loss_(lv1, gv2, batch, 'JSD', mask)
             loss2 = local_global_loss_(lv2, gv1, batch, 'JSD', mask)
@@ -281,7 +281,7 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
 
         epoch_loss /= itr
 
-        # print('Epoch: {0}, Loss: {1:0.4f}'.format(epoch, epoch_loss))
+        print('Epoch: {0}, Loss: {1:0.4f}'.format(epoch, epoch_loss))
 
         if epoch_loss < best:
             best = epoch_loss
@@ -296,10 +296,10 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
 
     model.load_state_dict(torch.load(f'{dataset}-{gpu}.pkl'))
 
-    features = feat.cuda()
-    adj = adj.cuda()
-    diff = diff.cuda()
-    labels = labels.cuda()
+    features = feat
+    adj = adj
+    diff = diff
+    labels = labels
 
     embeds = model.embed(features, adj, diff, num_nodes)
 
@@ -329,7 +329,8 @@ if __name__ == '__main__':
     layers = [2, 8, 12]
     batch = [32, 64, 128, 256]
     epoch = [20, 40, 100]
-    ds = ['MUTAG', 'PTC_MR', 'IMDB-BINARY', 'IMDB-MULTI', 'REDDIT-BINARY', 'REDDIT-MULTI-5K']
+    # ds = ['MUTAG', 'PTC_MR', 'IMDB-BINARY', 'IMDB-MULTI', 'REDDIT-BINARY', 'REDDIT-MULTI-5K']
+    ds = ['PTC_MR']
     seeds = [123, 132, 321, 312, 231]
     for d in ds:
         print(f'####################{d}####################')
