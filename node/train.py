@@ -3,7 +3,7 @@ import scipy.sparse as sp
 import torch
 import torch.nn as nn
 from utils import sparse_mx_to_torch_sparse_tensor
-from node.dataset import load
+from dataset import load
 
 
 # Borrowed from https://github.com/PetarV-/DGI
@@ -289,9 +289,10 @@ def train(dataset, verbose=False):
 if __name__ == '__main__':
     import warnings
     warnings.filterwarnings("ignore")
-    torch.cuda.set_device(3)
+    # torch.cuda.set_device(3)
 
     # 'cora', 'citeseer', 'pubmed'
     dataset = 'cora'
+    verbose = True
     for __ in range(50):
-        train(dataset)
+        train(dataset,verbose)

@@ -1,4 +1,4 @@
-from dgl.data import CoraDataset, CitationGraphDataset
+from dgl.data import CoraGraphDataset, CitationGraphDataset
 from utils import preprocess_features, normalize_adj
 from sklearn.preprocessing import MinMaxScaler
 from utils import compute_ppr
@@ -6,11 +6,12 @@ import scipy.sparse as sp
 import networkx as nx
 import numpy as np
 import os
+import dgl
 
 
 def download(dataset):
     if dataset == 'cora':
-        return CoraDataset()
+        return CoraGraphDataset()
     elif dataset == 'citeseer' or 'pubmed':
         return CitationGraphDataset(name=dataset)
     else:
@@ -23,14 +24,18 @@ def load(dataset):
     if not os.path.exists(datadir):
         os.makedirs(datadir)
         ds = download(dataset)
-        adj = nx.to_numpy_array(ds.graph)
-        diff = compute_ppr(ds.graph, 0.2)
-        feat = ds.features[:]
-        labels = ds.labels[:]
 
-        idx_train = np.argwhere(ds.train_mask == 1).reshape(-1)
-        idx_val = np.argwhere(ds.val_mask == 1).reshape(-1)
-        idx_test = np.argwhere(ds.test_mask == 1).reshape(-1)
+        # print(type(ds[0]))
+        graph = ds[0]
+
+        adj = nx.to_numpy_array(dgl.to_networkx(graph))
+        diff = compute_ppr(dgl.to_networkx(graph), 0.2)
+        feat = graph.ndata['feat']
+        labels = graph.ndata['label']
+
+        idx_train = np.argwhere(graph.ndata['train_mask'] == 1).reshape(-1)
+        idx_val = np.argwhere(graph.ndata['val_mask'] == 1).reshape(-1)
+        idx_test = np.argwhere(graph.ndata['test_mask'] == 1).reshape(-1)
         
         np.save(f'{datadir}/adj.npy', adj)
         np.save(f'{datadir}/diff.npy', diff)
