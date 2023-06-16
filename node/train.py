@@ -169,12 +169,12 @@ def train(dataset, verbose=False):
     model = Model(ft_size, hid_units)
     optimiser = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=l2_coef)
 
-    if torch.cuda.is_available():
-        model.cuda()
-        labels = labels.cuda()
-        lbl = lbl.cuda()
-        idx_train = idx_train.cuda()
-        idx_test = idx_test.cuda()
+    # if torch.cuda.is_available():
+    #     model.cuda()
+    #     labels = labels.cuda()
+    #     lbl = lbl.cuda()
+    #     idx_train = idx_train.cuda()
+    #     idx_test = idx_test.cuda()
 
     b_xent = nn.BCEWithLogitsLoss()
     xent = nn.CrossEntropyLoss()
@@ -206,11 +206,11 @@ def train(dataset, verbose=False):
         idx = np.random.permutation(sample_size)
         shuf_fts = bf[:, idx, :]
 
-        if torch.cuda.is_available():
-            bf = bf.cuda()
-            ba = ba.cuda()
-            bd = bd.cuda()
-            shuf_fts = shuf_fts.cuda()
+        # if torch.cuda.is_available():
+        #     bf = bf.cuda()
+        #     ba = ba.cuda()
+        #     bd = bd.cuda()
+        #     shuf_fts = shuf_fts.cuda()
 
         model.train()
         optimiser.zero_grad()
@@ -249,9 +249,9 @@ def train(dataset, verbose=False):
     features = torch.FloatTensor(features[np.newaxis])
     adj = torch.FloatTensor(adj[np.newaxis])
     diff = torch.FloatTensor(diff[np.newaxis])
-    features = features.cuda()
-    adj = adj.cuda()
-    diff = diff.cuda()
+    # features = features.cuda()
+    # adj = adj.cuda()
+    # diff = diff.cuda()
 
     embeds, _ = model.embed(features, adj, diff, sparse, None)
     train_embs = embeds[0, idx_train]
@@ -266,7 +266,7 @@ def train(dataset, verbose=False):
     for _ in range(50):
         log = LogReg(hid_units, nb_classes)
         opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=wd)
-        log.cuda()
+        # log.cuda()
         for _ in range(300):
             log.train()
             opt.zero_grad()
