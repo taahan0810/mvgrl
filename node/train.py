@@ -141,13 +141,13 @@ class LogReg(nn.Module):
         return ret
 
 
-def train(dataset, verbose=False):
+def train(dataset, verbose=False,bs=4,epochs=3000,learning_rate=0.001,hidden_units=512):
 
-    nb_epochs = 3000
+    nb_epochs = epochs
     patience = 20
-    lr = 0.001
+    lr = learning_rate
     l2_coef = 0.0
-    hid_units = 512
+    hid_units = hidden_units
     sparse = False
 
     adj, diff, features, labels, idx_train, idx_val, idx_test = load(dataset)
@@ -156,7 +156,7 @@ def train(dataset, verbose=False):
     nb_classes = np.unique(labels).shape[0]
 
     sample_size = 2000
-    batch_size = 4
+    batch_size = bs
 
     labels = torch.LongTensor(labels)
     idx_train = torch.LongTensor(idx_train)
@@ -294,5 +294,5 @@ if __name__ == '__main__':
     # 'cora', 'citeseer', 'pubmed'
     dataset = 'cora'
     verbose = True
-    for __ in range(50):
+    for __ in range(1):
         train(dataset,verbose)
