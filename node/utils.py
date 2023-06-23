@@ -3,6 +3,7 @@ import networkx as nx
 import torch
 from scipy.linalg import fractional_matrix_power, inv
 import scipy.sparse as sp
+import scipy.special
 
 
 def compute_ppr(graph: nx.Graph, alpha=0.2, self_loop=True):
@@ -22,6 +23,13 @@ def compute_heat(graph: nx.Graph, t=5, self_loop=True):
     d = np.diag(np.sum(a, 1))
     return np.exp(t * (np.matmul(a, inv(d)) - 1))
 
+def compute_pairwise_distance(graph: nx.Graph, self_loop=True):
+    a = nx.floyd_warshall_numpy(graph)
+    if self_loop:
+        a = a + np.eye(a.shape[0])
+    
+    d = np.reciprocal(a)
+    return scipy.special.softmax(d,axis=1)
 
 def sparse_to_tuple(sparse_mx):
     """Convert sparse matrix to tuple representation."""

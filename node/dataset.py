@@ -1,7 +1,7 @@
 from dgl.data import CoraGraphDataset, CitationGraphDataset
 from utils import preprocess_features, normalize_adj
 from sklearn.preprocessing import MinMaxScaler
-from utils import compute_ppr
+from utils import compute_ppr, compute_heat, compute_pairwise_distance
 import scipy.sparse as sp
 import networkx as nx
 import numpy as np
@@ -29,7 +29,9 @@ def load(dataset):
         graph = ds[0]
 
         adj = nx.to_numpy_array(dgl.to_networkx(graph))
-        diff = compute_ppr(dgl.to_networkx(graph), 0.2)
+        # diff = compute_ppr(dgl.to_networkx(graph), 0.2)
+        # diff = compute_heat(dgl.to_networkx(graph))
+        diff = compute_pairwise_distance(dgl.to_networkx(graph))
         feat = graph.ndata['feat']
         labels = graph.ndata['label']
 
